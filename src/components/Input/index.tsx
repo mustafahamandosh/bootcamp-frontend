@@ -1,7 +1,13 @@
-import React, { InputHTMLAttributes, useEffect, useRef } from 'react';
-import { IconBaseProps } from 'react-icons';
+import React, {
+  InputHTMLAttributes,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useField } from '@unform/core';
 
+import { IconBaseProps } from 'react-icons';
 import { Container } from './styles';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -9,10 +15,10 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input: React.FC<InputProps> = ({ name, icon: Icon, ...rest }) => {
-  const inputRef = useRef(null);
-  const { fieldName, defaultValue, error, registerField } = useField(
-    String(name),
-  );
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const [isFilled, setIsFilled] = useState(false);
+  const { fieldName, defaultValue, registerField } = useField(String(name));
 
   useEffect(() => {
     registerField({
@@ -22,10 +28,25 @@ const Input: React.FC<InputProps> = ({ name, icon: Icon, ...rest }) => {
     });
   }, [fieldName, registerField]);
 
+  const handleInputFocus = useCallback(() => {
+    setIsFocused(true);
+  }, []);
+
+  const handleInputBlur = useCallback(() => {
+    setIsFocused(false);
+    setIsFilled(!!inputRef.current?.value);
+  }, []);
+
   return (
-    <Container>
+    <Container isFocused={isFocused} isFilled={isFilled}>
       {Icon && <Icon size={20} />}
-      <input {...rest} ref={inputRef} defaultValue={defaultValue} />
+      <input
+        {...rest}
+        ref={inputRef}
+        defaultValue={defaultValue}
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+      />
     </Container>
   );
 };
