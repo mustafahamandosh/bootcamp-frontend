@@ -9,6 +9,7 @@ import Input from '../../components/Input';
 import Button from '../../components/Button';
 import getValidationErros from '../../utils/getValidationErrors';
 import { useAuth } from '../../hooks/Authentication';
+import { useToast } from '../../hooks/Toast';
 
 interface SignInData {
   email: string;
@@ -19,6 +20,7 @@ const SignIn: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
 
   const { signIn } = useAuth();
+  const { addToast } = useToast();
 
   const handleSubmit = useCallback(
     async (data: SignInData) => {
@@ -48,9 +50,14 @@ const SignIn: React.FC = () => {
 
           formRef.current?.setErrors(errors);
         }
+        addToast({
+          type: 'error',
+          title: 'Erro na autenticação',
+          message: 'Ocorreu um erro ao fazer login',
+        });
       }
     },
-    [signIn],
+    [signIn, addToast],
   );
 
   return (
