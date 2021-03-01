@@ -3,13 +3,18 @@ import { FiArrowLeft, FiLock, FiMail, FiUser } from 'react-icons/fi';
 import { Form } from '@unform/web';
 import * as Yup from 'yup';
 import { FormHandles } from '@unform/core';
+import { Link, useHistory } from 'react-router-dom';
 import { Background, Container, Content } from './styles';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import getValidationErros from '../../utils/getValidationErrors';
+import api from '../../services/api';
+import { useToast } from '../../hooks/Toast';
 
 const SignUp: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
+  const { addToast } = useToast();
+  const history = useHistory();
 
   const handleSubmit = useCallback(async data => {
     try {
@@ -25,12 +30,28 @@ const SignUp: React.FC = () => {
       await schema.validate(data, {
         abortEarly: false,
       });
+
+      await api.post('/users', data);
+
+      history.push('/');
+
+      addToast({
+        type: 'success',
+        title: 'Cadastro realizado!',
+        message: 'Você já pode fazer seu login no GoBarber',
+      });
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         const errors = getValidationErros(err);
 
         formRef.current?.setErrors(errors);
+        return;
       }
+      addToast({
+        type: 'error',
+        title: 'Erro no cadastro',
+        message: 'Ocorreu um erro ao fazer cadastro',
+      });
     }
   }, []);
 
@@ -54,10 +75,10 @@ const SignUp: React.FC = () => {
           <Button type="submit">Cadastrar</Button>
         </Form>
 
-        <a href="forget">
+        <Link to="/">
           <FiArrowLeft />
           Voltar para login
-        </a>
+        </Link>
       </Content>
     </Container>
   );
